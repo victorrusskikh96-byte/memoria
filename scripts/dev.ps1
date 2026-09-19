@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
-    [ValidateSet("sync", "up", "down", "migrate", "test", "lint", "format", "run", "check")]
+    [ValidateSet("sync", "up", "down", "migrate", "test", "integration", "lint", "format", "run", "check")]
     [string]$Task = "check"
 )
 
@@ -29,6 +29,15 @@ switch ($Task) {
     }
     "migrate" { uv run alembic upgrade head }
     "test" { uv run pytest }
+    "integration" {
+        $env:MEMORIA_RUN_INTEGRATION_TESTS = "1"
+        try {
+            uv run alembic upgrade head
+            uv run pytest tests/integration
+        } finally {
+            Remove-Item Env:MEMORIA_RUN_INTEGRATION_TESTS -ErrorAction SilentlyContinue
+        }
+    }
     "lint" {
         uv run ruff check .
         uv run mypy

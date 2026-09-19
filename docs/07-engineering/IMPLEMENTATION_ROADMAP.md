@@ -11,7 +11,7 @@ Exit: a new workstation can run the API and all checks from documented commands.
 
 ## Stage 1 — trust kernel
 
-- canonical IDs and append-only policy events;
+- canonical IDs and append-only policy events (authorization decision slice implemented);
 - identity assurance evidence;
 - consent receipts with purpose, scope, expiry, and revocation;
 - stewardship and succession grants;
