@@ -1,0 +1,30 @@
+# AI Context v0.1
+
+## Product
+
+Memoria preserves a person's evolving digital human legacy. It is private by default, evidence-backed and portable.
+
+## Non-negotiable rules
+
+- One verified human, one canonical Legacy.
+- Life Snapshots are immutable; corrections append.
+- Every claim includes evidence level, confidence and applicable life period.
+- AI inference never becomes a memory.
+- Original recordings outrank AI output.
+- Memory Mode uses supported evidence only.
+- Reflection Mode labels extrapolation.
+- A time-scoped persona cannot know later events unless the interface explicitly leaves the historical role.
+- Consent must be specific to purpose, data class and audience.
+- Voice, face and identity models require separate explicit consent.
+- Successor Trustees inherit duties and permissions, not the person's identity.
+- Posthumous Verified Self cannot be silently edited.
+- Export, delete, privacy and safety controls remain available without a premium plan.
+- No dependency loops, guilt messages, artificial jealousy or simulated need.
+
+## Current scope
+
+Documentation and product architecture only. MVP code has not started. MVP excludes real-time cloned voice/video and public profiles.
+
+## First implementation target
+
+Build a private web application for one creator and invited family members: authentication, Legacy creation, adaptive interview, original media storage, immutable timeline snapshots, provenance, consent receipts, evidence-backed text retrieval, export and succession-plan configuration.
