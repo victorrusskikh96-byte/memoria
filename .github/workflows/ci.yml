@@ -1,24 +1,72 @@
-name: quality
+name: CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test:
+  quality:
+    name: Quality and tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: memoria
+          POSTGRES_USER: memoria
+          POSTGRES_PASSWORD: memoria_dev_only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U memoria -d memoria"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      MEMORIA_ENVIRONMENT: test
+      MEMORIA_DATABASE_URL: postgresql+asyncpg://memoria:memoria_dev_only@127.0.0.1:5432/memoria
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
         with:
-          python-version: "3.13"
+          version: "0.12.17"
           enable-cache: true
-      - run: uv sync --locked --all-groups
-      - run: uv run ruff check .
-      - run: uv run ruff format --check .
-      - run: uv run mypy
-      - run: uv run pytest
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install Python
+        run: uv python install 3.13
+
+      - name: Install dependencies
+        run: uv sync --locked --all-groups
+
+      - name: Check formatting
+        run: uv run ruff format --check .
+
+      - name: Run linter
+        run: uv run ruff check .
+
+      - name: Run type checking
+        run: uv run mypy
+
+      - name: Apply database migrations
+        run: uv run alembic upgrade head
+
+      - name: Run tests
+        run: uv run pytest
