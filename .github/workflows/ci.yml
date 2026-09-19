@@ -70,3 +70,8 @@ jobs:
 
       - name: Run tests
         run: uv run pytest
+
+      - name: Run PostgreSQL integration tests
+        env:
+          MEMORIA_RUN_INTEGRATION_TESTS: "1"
+        run: uv run pytest tests/integration

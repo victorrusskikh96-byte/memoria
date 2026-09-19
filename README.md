@@ -11,13 +11,17 @@ The repository contains the accepted product/trust documentation and the first e
 - FastAPI application factory;
 - liveness and PostgreSQL readiness endpoints;
 - typed trust-domain vocabulary;
+- versioned deny-by-default Trust Kernel decisions;
+- append-only PostgreSQL authorization audit records;
 - asynchronous SQLAlchemy setup;
 - Alembic configuration;
 - local PostgreSQL container;
 - pytest, Ruff and mypy configuration;
 - Windows environment audit and PowerShell developer commands.
 
-No user-facing feature or AI generation is implemented yet. This is deliberate: the first feature slice will start only after the authorization matrix and immutable event rules are reviewed.
+No user-facing feature or AI generation is implemented yet. This is deliberate:
+the first Trust Kernel slice establishes authorization and immutable decision
+records before any public capability is exposed.
 
 ## Recommended host
 

@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from memoria.core.config import get_settings
 from memoria.infrastructure.database.base import Base
+from memoria.infrastructure.database.models import AuthorizationDecisionRecord  # noqa: F401
 
 config = context.config
 if config.config_file_name is not None:
