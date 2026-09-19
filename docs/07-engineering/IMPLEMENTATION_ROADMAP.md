@@ -11,12 +11,41 @@ Exit: a new workstation can run the API and all checks from documented commands.
 
 ## Stage 1 — trust kernel
 
-- canonical IDs and append-only policy events (authorization decision slice implemented);
-- identity assurance evidence;
-- consent receipts with purpose, scope, expiry, and revocation;
-- stewardship and succession grants;
-- centralized authorization decisions with reason codes;
-- immutable snapshots and audit records.
+### Stage 1.1 — Trust Kernel authorization decisions — implemented
+
+- centralized, versioned and deny-by-default authorization decisions;
+- canonical request IDs, reason codes and request fingerprints;
+- append-only PostgreSQL authorization decision records.
+
+### Stage 1.2 — Canonical Identity and Assurance Evidence — current
+
+- canonical HumanSubject, Account and immutable identity binding;
+- minimal identity-evidence metadata with opaque provider references;
+- append-only assurance events and deterministic effective assurance.
+
+### Stage 1.3 — Consent Receipts
+
+- purpose- and scope-bound receipts;
+- expiry, review and revocation behavior;
+- immutable consent history.
+
+### Stage 1.4 — Rights and Authority Grants
+
+- resource rights and stewardship basis;
+- narrow, time-bounded Authority Grants;
+- explicit separation of control, permission and ownership.
+
+### Stage 1.5 — Succession Plans and Activation Evidence
+
+- creator-authored succession plans;
+- activation evidence, cooling periods and approval thresholds;
+- append-only lifecycle transition records.
+
+### Stage 1.6 — synthetic end-to-end trust scenario
+
+- resolve canonical Identity, Consent, Rights and Succession facts;
+- produce and persist one centralized authorization decision;
+- test allowed and denial paths across the complete trust context.
 
 Exit: the first synthetic end-to-end trust scenario is tested, including denial paths.
 
