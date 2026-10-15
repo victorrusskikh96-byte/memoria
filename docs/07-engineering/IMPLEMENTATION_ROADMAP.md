@@ -17,11 +17,27 @@ Exit: a new workstation can run the API and all checks from documented commands.
 - canonical request IDs, reason codes and request fingerprints;
 - append-only PostgreSQL authorization decision records.
 
-### Stage 1.2 — Canonical Identity and Assurance Evidence — current
+### Stage 1.2 — Canonical Identity and Assurance Evidence — current, partially implemented
 
-- canonical HumanSubject, Account and immutable identity binding;
-- minimal identity-evidence metadata with opaque provider references;
-- append-only assurance events and deterministic effective assurance.
+Completed or implemented in the current feature branch:
+
+- approved Identity architecture and executable domain specification;
+- canonical domain entities;
+- immutable IdentityEvidenceRevocation domain fact;
+- deterministic Evidence Policy V1;
+- unit tests and privacy protections for the implemented slice.
+
+Pending:
+
+- stream transition validator;
+- terminal `REVOKED` stream enforcement;
+- fallback-chain validation;
+- effective assurance resolver;
+- application services and repository ports;
+- SQLAlchemy persistence;
+- Alembic migrations and PostgreSQL constraints;
+- database integration tests;
+- API layer.
 
 ### Stage 1.3 — Consent Receipts
 

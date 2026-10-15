@@ -16,6 +16,7 @@ from memoria.domain.identity import (
     IdentityAssuranceLevel,
     IdentityEvidence,
     IdentityEvidenceKind,
+    IdentityEvidenceRevocation,
 )
 
 SUBJECT_ID = UUID("00000000-0000-0000-0000-000000000001")
@@ -25,6 +26,8 @@ EVIDENCE_ID = UUID("00000000-0000-0000-0000-000000000004")
 EVENT_ID = UUID("00000000-0000-0000-0000-000000000005")
 FALLBACK_EVENT_ID = UUID("00000000-0000-0000-0000-000000000006")
 IDEMPOTENCY_KEY = UUID("00000000-0000-0000-0000-000000000007")
+REVOCATION_ID = UUID("00000000-0000-0000-0000-000000000008")
+REVOCATION_IDEMPOTENCY_KEY = UUID("00000000-0000-0000-0000-000000000009")
 NOW = datetime(2026, 9, 19, 12, 0, tzinfo=UTC)
 
 
@@ -66,6 +69,23 @@ def make_event(**overrides: object) -> IdentityAssuranceEvent:
     }
     values.update(overrides)
     return IdentityAssuranceEvent(**values)  # type: ignore[arg-type]
+
+
+def make_revocation(**overrides: object) -> IdentityEvidenceRevocation:
+    """Build a valid identity evidence revocation with optional overrides."""
+
+    values: dict[str, object] = {
+        "id": REVOCATION_ID,
+        "evidence_id": EVIDENCE_ID,
+        "binding_id": BINDING_ID,
+        "revoked_at": NOW,
+        "reason_code": "provider.revoked",
+        "idempotency_key": REVOCATION_IDEMPOTENCY_KEY,
+        "recorded_at": NOW,
+        "schema_version": "1.0",
+    }
+    values.update(overrides)
+    return IdentityEvidenceRevocation(**values)  # type: ignore[arg-type]
 
 
 def make_effective_assurance(**overrides: object) -> EffectiveIdentityAssurance:
@@ -156,6 +176,132 @@ def test_identity_evidence_repr_redacts_opaque_reference() -> None:
     assert f"expires_at={NOW + timedelta(days=365)!r}" in representation
     assert f"recorded_at={NOW!r}" in representation
     assert "schema_version='1.0'" in representation
+
+
+def test_identity_evidence_revocation_is_created() -> None:
+    """Revocation construction retains every canonical field."""
+
+    revocation = make_revocation()
+
+    assert revocation.id == REVOCATION_ID
+    assert revocation.evidence_id == EVIDENCE_ID
+    assert revocation.binding_id == BINDING_ID
+    assert revocation.revoked_at == NOW
+    assert revocation.reason_code == "provider.revoked"
+    assert revocation.idempotency_key == REVOCATION_IDEMPOTENCY_KEY
+    assert revocation.recorded_at == NOW
+    assert revocation.schema_version == "1.0"
+
+
+def test_identity_evidence_revocation_normalizes_datetimes_to_utc() -> None:
+    """Revocation timestamps normalize aware offsets to UTC."""
+
+    offset_time = datetime(
+        2026,
+        9,
+        19,
+        17,
+        30,
+        tzinfo=timezone(timedelta(hours=5, minutes=30)),
+    )
+
+    revocation = make_revocation(revoked_at=offset_time, recorded_at=offset_time)
+
+    assert revocation.revoked_at == NOW
+    assert revocation.revoked_at.tzinfo is UTC
+    assert revocation.recorded_at == NOW
+    assert revocation.recorded_at.tzinfo is UTC
+
+
+def test_identity_evidence_revocation_is_frozen() -> None:
+    """Revocation fields cannot be reassigned after construction."""
+
+    revocation = make_revocation()
+
+    with pytest.raises(FrozenInstanceError):
+        revocation.reason_code = "replacement"
+
+
+def test_identity_evidence_revocation_uses_slots() -> None:
+    """Revocation instances do not expose a mutable attribute dictionary."""
+
+    assert not hasattr(make_revocation(), "__dict__")
+
+
+@pytest.mark.parametrize("field", ["id", "evidence_id", "binding_id", "idempotency_key"])
+def test_identity_evidence_revocation_rejects_invalid_uuid_fields(field: str) -> None:
+    """Every revocation identifier requires a UUID value."""
+
+    with pytest.raises(TypeError, match=field):
+        make_revocation(**{field: "not-a-uuid"})
+
+
+def test_identity_evidence_revocation_rejects_naive_revoked_at() -> None:
+    """The revocation time must include timezone information."""
+
+    with pytest.raises(ValueError, match="revoked_at"):
+        make_revocation(revoked_at=datetime(2026, 9, 19, 12, 0))
+
+
+def test_identity_evidence_revocation_rejects_naive_recorded_at() -> None:
+    """The recording time must include timezone information."""
+
+    with pytest.raises(ValueError, match="recorded_at"):
+        make_revocation(recorded_at=datetime(2026, 9, 19, 12, 0))
+
+
+@pytest.mark.parametrize("value", ["a", "9" + "a" * 63, "reason.code_1-2"])
+def test_identity_evidence_revocation_accepts_reason_code_boundaries(value: str) -> None:
+    """Revocation reason codes accept the bounded safe slug syntax."""
+
+    assert make_revocation(reason_code=value).reason_code == value
+
+
+@pytest.mark.parametrize("value", ["", "Uppercase", "-leading", "has space", "a" * 65])
+def test_identity_evidence_revocation_rejects_invalid_reason_codes(value: str) -> None:
+    """Revocation reason codes reject forbidden syntax and lengths."""
+
+    with pytest.raises(ValueError, match="reason_code"):
+        make_revocation(reason_code=value)
+
+
+@pytest.mark.parametrize("value", ["1", "schema 1.0", "v" * 64])
+def test_identity_evidence_revocation_accepts_schema_version_boundaries(value: str) -> None:
+    """Revocation schema versions accept bounded printable ASCII values."""
+
+    assert make_revocation(schema_version=value).schema_version == value
+
+
+@pytest.mark.parametrize("value", ["", " leading", "trailing ", "é", "line\nbreak", "a" * 65])
+def test_identity_evidence_revocation_rejects_invalid_schema_versions(value: str) -> None:
+    """Revocation schema versions reject values outside the canonical contract."""
+
+    with pytest.raises(ValueError, match="schema_version"):
+        make_revocation(schema_version=value)
+
+
+def test_identity_evidence_revocation_does_not_invent_timestamp_ordering() -> None:
+    """Revocation timestamps have no undocumented cross-field ordering rule."""
+
+    earlier_recording = NOW - timedelta(seconds=1)
+
+    revocation = make_revocation(recorded_at=earlier_recording)
+
+    assert revocation.recorded_at == earlier_recording
+    assert revocation.revoked_at == NOW
+
+
+def test_identity_evidence_rejects_string_kind_without_disclosure() -> None:
+    """Evidence rejects a string kind without exposing sensitive input."""
+
+    sensitive_reference = "sensitive:evidence|reference"
+    sensitive_kind = "sensitive-kind"
+
+    with pytest.raises(ValueError, match="IdentityEvidenceKind") as error:
+        make_evidence(kind=sensitive_kind, opaque_reference=sensitive_reference)
+
+    assert sensitive_reference not in str(error.value)
+    assert sensitive_kind not in str(error.value)
 
 
 @pytest.mark.parametrize(

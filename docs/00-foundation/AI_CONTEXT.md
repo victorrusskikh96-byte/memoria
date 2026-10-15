@@ -21,9 +21,26 @@ Memoria preserves a person's evolving digital human legacy. It is private by def
 - Export, delete, privacy and safety controls remain available without a premium plan.
 - No dependency loops, guilt messages, artificial jealousy or simulated need.
 
+## Engineering rules
+
+- Architecture decisions are reflected in ADRs and domain documentation before
+  or together with the corresponding code.
+- Every new or changed Python module, class, dataclass, enum, function, method,
+  helper, and test function requires a concise one-line English docstring.
+
 ## Current scope
 
-Documentation and product architecture only. MVP code has not started. MVP excludes real-time cloned voice/video and public profiles.
+The backend foundation and CI are in place. Trust Kernel v1 is implemented and
+merged into `main`. Stage 1.2 Identity Assurance is in progress on
+`feat/identity-assurance-v1`: canonical Identity entities, the immutable
+evidence revocation fact, and Evidence Policy V1 are implemented in the feature
+branch and pass their checks. Stage 1.2 is not complete; its stream validator,
+effective assurance resolver, application layer, persistence, migrations, and
+API remain unimplemented.
+
+Digital Legacy Mode remains the first product direction. The primary product
+path is a web MVP; mobile clients follow only after the backend and web flow are
+stable. The MVP excludes real-time cloned voice/video and public profiles.
 
 ## First implementation target
 

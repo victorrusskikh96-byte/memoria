@@ -143,6 +143,8 @@ class IdentityEvidence:
 
         _validate_uuid("id", self.id)
         _validate_uuid("binding_id", self.binding_id)
+        if not isinstance(self.kind, IdentityEvidenceKind):
+            raise ValueError("kind must be an IdentityEvidenceKind")
         _validate_pattern("provider", self.provider, _AUTHORITY_OR_PROVIDER_PATTERN)
         _validate_pattern("opaque_reference", self.opaque_reference, _OPAQUE_REFERENCE_PATTERN)
         _validate_printable_ascii_version("schema_version", self.schema_version)
@@ -158,6 +160,40 @@ class IdentityEvidence:
         object.__setattr__(self, "observed_at", observed_at)
         object.__setattr__(self, "expires_at", expires_at)
         object.__setattr__(self, "recorded_at", recorded_at)
+
+
+@dataclass(frozen=True, slots=True)
+class IdentityEvidenceRevocation:
+    """Record the immutable withdrawal of one identity evidence item."""
+
+    id: UUID
+    evidence_id: UUID
+    binding_id: UUID
+    revoked_at: datetime
+    reason_code: str
+    idempotency_key: UUID
+    recorded_at: datetime
+    schema_version: str
+
+    def __post_init__(self) -> None:
+        """Validate identifiers, strings, and UTC-normalized timestamps."""
+
+        _validate_uuid("id", self.id)
+        _validate_uuid("evidence_id", self.evidence_id)
+        _validate_uuid("binding_id", self.binding_id)
+        _validate_uuid("idempotency_key", self.idempotency_key)
+        _validate_pattern("reason_code", self.reason_code, _REASON_CODE_PATTERN)
+        _validate_printable_ascii_version("schema_version", self.schema_version)
+        object.__setattr__(
+            self,
+            "revoked_at",
+            _normalize_datetime("revoked_at", self.revoked_at),
+        )
+        object.__setattr__(
+            self,
+            "recorded_at",
+            _normalize_datetime("recorded_at", self.recorded_at),
+        )
 
 
 @dataclass(frozen=True, slots=True)

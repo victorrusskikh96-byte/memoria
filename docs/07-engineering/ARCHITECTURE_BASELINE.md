@@ -46,6 +46,11 @@ The first functional slice is deliberately narrow:
 5. produce an immutable snapshot;
 6. verify that a revocation blocks derived use without rewriting history.
 
-The code currently supplies the runtime, database boundary, health checks, and
-trust enums. The next implementation step is the authorization decision record
-and the first database migration.
+The backend foundation and Trust Kernel v1 are implemented. Centralized,
+versioned authorization decisions are active, and their append-only PostgreSQL
+persistence and Alembic migration exist.
+
+Identity Assurance V1 is the current active architecture stage and remains
+incomplete. Its domain entities, immutable evidence-revocation fact, and
+Evidence Policy V1 are implemented in the feature branch; Identity Assurance
+persistence and API work have not started.
